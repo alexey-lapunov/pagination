@@ -44,6 +44,15 @@ $white: #ffffff;
 
   transition: background-color .25s;
 
+  &.active {
+    font-weight: 700;
+    color: red;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
   &:hover {
     background-color: rgb(238, 242, 246);
   }
