@@ -5,17 +5,14 @@ import classnames from "classnames";
 import styles from "./Pagination.module.scss";
 
 class Pagination extends React.Component {
-  constructor(props) {
-    super(props);
-    this.pages = Array.from(Array(10), (item, i) => i + 1);
-  }
   state = {
-    activePage: 1
+    activePage: this.props.activePage || 1,
+    arrayPages: Array.from(Array(this.props.countPage || 0), (item, i) => i + 1)
   };
 
   nextPage = () => {
-    const { activePage } = this.state;
-    if (activePage !== this.pages.length)
+    const { activePage, arrayPages } = this.state;
+    if (activePage !== arrayPages.length)
       this.setState({ activePage: activePage + 1 });
   };
 
@@ -24,9 +21,20 @@ class Pagination extends React.Component {
     if (activePage !== 1) this.setState({ activePage: activePage - 1 });
   };
 
+  goToPage = index => this.setState({ activePage: index });
+
+  firstPage = () => this.setState({ activePage: 1 });
+  lastPage = () => this.setState({ activePage: this.state.arrayPages.length });
+
   render() {
-    const pageSize = 5;
-    const { activePage } = this.state;
+    const { activePage, arrayPages } = this.state;
+    const { pageSize } = this.props;
+    const activePageIndex = activePage - 1;
+    const lastIndexDisplayedLink =
+      activePageIndex + pageSize - 1 >= arrayPages.length
+        ? arrayPages.length - 1
+        : activePageIndex + pageSize - 1;
+    const firstIndexDisplayedLink = lastIndexDisplayedLink - (pageSize - 1);
 
     return (
       <div className={styles.pagination}>
@@ -37,23 +45,32 @@ class Pagination extends React.Component {
         >
           P
         </button>
-        <button className={styles.link}>1</button>
+        <button className={styles.link} onClick={this.firstPage}>
+          1
+        </button>
         <span className={styles.dots}>...</span>
         <ul className={styles.list}>
-          {this.pages.map((item, i) => (
-            <li className={styles.item} key={i}>
-              <button
-                className={classnames(styles.link, {
-                  [styles.active]: activePage === item
-                })}
-              >
-                {item}
-              </button>
-            </li>
-          ))}
+          {arrayPages.map((item, i) => {
+            if (i >= firstIndexDisplayedLink && i <= lastIndexDisplayedLink) {
+              return (
+                <li className={styles.item} key={i}>
+                  <button
+                    className={classnames(styles.link, {
+                      [styles.active]: activePage === item
+                    })}
+                    onClick={() => this.goToPage(item)}
+                  >
+                    {item}
+                  </button>
+                </li>
+              );
+            }
+          })}
         </ul>
         <span className={styles.dots}>...</span>
-        <button className={styles.link}>20</button>
+        <button className={styles.link} onClick={this.lastPage}>
+          {arrayPages.length}
+        </button>
         <button
           type="button"
           onClick={this.nextPage}
