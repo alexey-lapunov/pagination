@@ -7,7 +7,7 @@ import styles from "./App.module.scss";
 function App() {
   return (
     <div className={styles.app}>
-      <Pagination pageNumber={20} activePage={1} pageSize={5}/>
+      <Pagination pageNumber={20} activePage={1} numberPagesVisible={5}/>
     </div>
   );
 }

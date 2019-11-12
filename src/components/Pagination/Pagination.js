@@ -1,87 +1,93 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import classnames from "classnames";
+import classnames from 'classnames';
 
-import styles from "./Pagination.module.scss";
+import styles from './Pagination.module.scss';
 
-const Pagination = ({activePage: activePageProps = 1, pageNumber = 0, pageSize = 5}) =>  {
+const Pagination = ({ activePage: activePageProps = 1, pageNumber = 0, numberPagesVisible = pageNumber }) =>  {
     const [ activePage, setActivePage ] = useState(activePageProps);
     const [ arrayPages ] = useState(Array.from(Array(pageNumber), (item, i) => i + 1));
-
-    const nextPage = () => {
+    const goToNextPage = () => {
         if (activePage !== arrayPages.length) setActivePage(activePage + 1);
     };
-
-    const prevPage = () => {
+    const goToPrevPage = () => {
         if (activePage !== 1) setActivePage(activePage - 1);
     };
-
     const goToPage = index => setActivePage(index);
-
-    const firstPage = () => setActivePage(1);
-    const lastPage = () => setActivePage(arrayPages.length);
-
+    const goToFirstPage = () => setActivePage(1);
+    const goToLastPage = () => setActivePage(arrayPages.length);
     const activePageIndex = activePage - 1;
-    const firstIndexDisplayedLink = arrayPages[activePageIndex - 3]
+    const numberPagesSides = Math.floor(numberPagesVisible / 2);
+    const firstIndexDisplayedLink = arrayPages[activePageIndex - numberPagesSides]
         ? (
-            arrayPages[activePageIndex + 3]
-                ? activePageIndex - 2
-                : arrayPages.length - 5
+            arrayPages[activePageIndex + numberPagesSides]
+                ? activePageIndex - numberPagesSides
+                : arrayPages.length - numberPagesVisible
         )
         : 0;
     const lastIndexDisplayedLink = firstIndexDisplayedLink
         ? (
-            firstIndexDisplayedLink <= arrayPages.length - 6
-                ? activePageIndex + 2
+            firstIndexDisplayedLink <= arrayPages.length - numberPagesVisible - 1
+                ? activePageIndex + numberPagesSides
                 : arrayPages.length - 1
         )
-        : pageSize - 1;
+        : numberPagesVisible - 1;
+    const arrayDisplayedPages = arrayPages
+        .map((item, i) => (
+            i >= firstIndexDisplayedLink && i <= lastIndexDisplayedLink && item
+        ))
+        .filter(Boolean);
+    const isDisabledPrevButton = !activePageIndex;
+    const isDisabledNextButton = activePageIndex === pageNumber - 1;
 
     return (
         <div className={styles.pagination}>
             <button
                 type="button"
-                onClick={prevPage}
-                className={classnames(styles.button, styles.prev)}
+                onClick={goToPrevPage}
+                disabled={isDisabledPrevButton}
+                className={classnames(styles.link, styles.prev, {
+                    [styles.disabled]: isDisabledPrevButton,
+                })}
             >
                 P
             </button>
             {!!firstIndexDisplayedLink && (<>
-                <button className={styles.link} onClick={firstPage}>
+                <button className={styles.link} onClick={goToFirstPage}>
                     1
                 </button>
                 <span className={styles.dots}>...</span>
             </>)}
 
             <ul className={styles.list}>
-                {arrayPages.map((item, i) => {
-                    if (i >= firstIndexDisplayedLink && i <= lastIndexDisplayedLink) {
-                        return (
-                            <li className={styles.item} key={i}>
-                                <button
-                                    className={classnames(styles.link, {
-                                        [styles.active]: activePage === item
-                                    })}
-                                    onClick={() => goToPage(item)}
-                                >
-                                    {item}
-                                </button>
-                            </li>
-                        );
-                    }
-                    return null;
+                {arrayDisplayedPages.map((item, i) => {
+                    return (
+                        <li className={styles.item} key={i}>
+                            <button
+                                className={classnames(styles.link, {
+                                    [styles.active]: activePage === item,
+                                })}
+                                onClick={() => goToPage(item)}
+                            >
+                                {item}
+                            </button>
+                        </li>
+                    );
                 })}
             </ul>
             {lastIndexDisplayedLink !== arrayPages.length - 1 && (<>
                 <span className={styles.dots}>...</span>
-                <button className={styles.link} onClick={lastPage}>
+                <button className={styles.link} onClick={goToLastPage}>
                     {arrayPages.length}
                 </button>
             </>)}
             <button
                 type="button"
-                onClick={nextPage}
-                className={classnames(styles.button, styles.next)}
+                onClick={goToNextPage}
+                disabled={isDisabledNextButton}
+                className={classnames(styles.link, styles.next, {
+                    [styles.disabled]: isDisabledNextButton,
+                })}
             >
                 N
             </button>
